@@ -39,10 +39,10 @@ export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email }) => {
       <div className="w-full max-w-md bg-black border border-cyber-red p-4 font-mono text-xs md:text-sm text-cyber-red shadow-[0_0_20px_rgba(255,0,60,0.3)]">
         <div className="mb-2 border-b border-cyber-red/30 pb-2">紧急响应单元_V2</div>
         <div className="space-y-1">
-          <p>> 正在检测生命体征... <span className="text-red-500 font-bold">无/阴性</span></p>
-          <p>> 超出安全阈值。</p>
-          <p>> 正在启动紧急联系协议...</p>
-          <p>> 目标: {email}</p>
+          <p>{'>'} 正在检测生命体征... <span className="text-red-500 font-bold">无/阴性</span></p>
+          <p>{'>'} 超出安全阈值。</p>
+          <p>{'>'} 正在启动紧急联系协议...</p>
+          <p>{'>'} 目标: {email}</p>
           <div className="mt-4">
             <div className="flex justify-between mb-1">
               <span>正在上传数据包</span>
@@ -56,7 +56,7 @@ export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email }) => {
             </div>
           </div>
           {progress >= 100 && (
-             <p className="mt-2 animate-pulse font-bold">> 发送成功。</p>
+             <p className="mt-2 animate-pulse font-bold">{'>'} 发送成功。</p>
           )}
         </div>
       </div>

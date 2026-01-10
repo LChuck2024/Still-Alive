@@ -45,9 +45,9 @@ export const VIPModal: React.FC<VIPModalProps> = ({ isOpen, onClose }) => {
                 升级协议
               </h2>
               <div className="text-sm text-cyber-yellow/80 mb-6 font-mono border-l-2 border-cyber-yellow/50 pl-4 space-y-2">
-                <p>> 启用短信 (SMS) 紧急信道</p>
-                <p>> 卫星定位追踪 (GPS Level 2)</p>
-                <p>> 移除系统广告</p>
+                <p>{'>'} 启用短信 (SMS) 紧急信道</p>
+                <p>{'>'} 卫星定位追踪 (GPS Level 2)</p>
+                <p>{'>'} 移除系统广告</p>
               </div>
               
               <div className="bg-cyber-yellow/5 border border-dashed border-cyber-yellow/30 p-3 mb-6">
@@ -73,7 +73,7 @@ export const VIPModal: React.FC<VIPModalProps> = ({ isOpen, onClose }) => {
                  {/* QR Code Container */}
                  <div className="w-48 h-48 bg-white p-2 mx-auto relative overflow-hidden">
                     <img 
-                      src="/qr-code.png" 
+                      src="/qr_code.JPG" 
                       alt="Payment QR" 
                       className={`w-full h-full object-contain ${loadingPayment ? 'blur-sm opacity-50' : ''}`}
                       onError={(e) => {

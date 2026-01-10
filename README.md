@@ -71,26 +71,25 @@
 
 ```text
 /
-├── public/
-│   ├── icon.svg          # PWA 图标
-│   ├── manifest.json     # PWA 清单配置
-│   └── sw.js             # Service Worker (离线缓存)
-├── src/
-│   ├── components/       # UI 组件库
-│   │   ├── AlertOverlay  # 红色警戒覆盖层
-│   │   ├── CyberButton   # 通用赛博按钮
-│   │   ├── GlobalStats   # 顶部全局数据栏
-│   │   ├── Layout        # 主布局 (含扫描线特效)
-│   │   ├── ProgressRing  # 倒计时圆环
-│   │   ├── StatusMonitor # 底部日志终端
-│   │   └── VIPModal      # 支付弹窗
-│   ├── services/
-│   │   └── storage.ts    # 本地存储逻辑封装
-│   ├── types.ts          # TypeScript 类型定义
-│   ├── App.tsx           # 主应用逻辑
-│   ├── index.tsx         # 入口文件
-│   └── index.html        # HTML 模板
-└── README.md
+├── components/       # UI Module (UI 组件库)
+│   ├── AlertOverlay.tsx  # 红色警戒覆盖层
+│   ├── CyberButton.tsx   # 通用赛博按钮
+│   ├── GlobalStats.tsx   # 顶部全局数据栏
+│   ├── Layout.tsx        # 主布局 (含扫描线特效)
+│   ├── ProgressRing.tsx  # 倒计时圆环
+│   ├── StatusMonitor.tsx # 底部日志终端
+│   └── VIPModal.tsx      # 支付弹窗
+├── services/         # Logic Core (逻辑服务)
+│   └── storage.ts        # 本地存储逻辑封装
+├── App.tsx           # Main Application (主应用)
+├── index.html        # Entry Point (HTML 入口)
+├── index.tsx         # Bootstrapper (React 入口)
+├── types.ts          # Type Definitions (类型定义)
+├── manifest.json     # PWA Config (清单配置)
+├── sw.js             # Service Worker (离线缓存)
+├── icon.svg          # App Icon (应用图标)
+├── qr-code.png       # Payment Asset (支付二维码)
+└── README.md         # Documentation (文档)
 ```
 
 ## 自定义配置 (Configuration)
@@ -102,9 +101,6 @@
 *   `cyber-yellow`: `#facc15` (辅助色 - VIP)
 *   `cyber-black`: `#050505` (背景色)
 
-## 许可证 (License)
-
-[MIT License](LICENSE)
 
 ---
 

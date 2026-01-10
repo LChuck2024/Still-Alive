@@ -1,1 +1,113 @@
-# pingankou-app
+# 平安扣 (Ping An Kou) | P.A.K. Protocol
+
+> "保持信号连接。不要关闭您的终端。"
+> "Keep your signal alive. Do not turn off your terminal."
+
+![License](https://img.shields.io/badge/license-MIT-green.svg) ![Style](https://img.shields.io/badge/style-Cyberpunk-00ff41.svg) ![PWA](https://img.shields.io/badge/PWA-Ready-facc15.svg)
+
+**平安扣** 是一款极简主义、赛博朋克风格的 **Web MVP (最小可行性产品)**，核心概念为“死人开关 (Dead Man's Switch)”。它模仿了末日生存环境下的通信终端，用户通过定期打卡来向系统确认“我还在”。一旦超过设定的时间阈值未打卡，系统将进入红色警戒状态，并模拟触发紧急联系协议。
+
+## 核心功能 (Core Protocols)
+
+*   **存活确认 (Heartbeat Check-in)**: 巨大的“我还在”按钮，点击即发送心跳包，重置倒计时。
+*   **可视化倒计时 (Visual Countdown)**: 带有动态颜色变化的进度环（绿 -> 黄 -> 红），直观展示剩余生存时间。
+*   **红色警戒模式 (Red Alert Mode)**: 当倒计时归零，界面切换至“系统故障”的红色警戒主题，并弹出全屏告警覆盖层。
+*   **本地数据持久化 (Local Persistence)**: 使用 `localStorage` 模拟数据库，保存用户身份、设置及日志，刷新页面不丢失状态。
+*   **PWA 支持 (Progressive Web App)**: 支持“添加到主屏幕”，离线可用，提供原生 App 般的沉浸式体验。
+*   **VIP 模拟支付**: 集成模拟的微信支付流程，用于解锁“高级功能”（演示用途）。
+*   **沉浸式 UI**: 包含扫描线 (Scanlines)、故障文字 (Glitch Text)、冲击波 (Shockwave) 动画及动态终端日志。
+
+## 技术栈 (Tech Stack)
+
+本项目采用现代前端技术构建，无需后端服务器即可运行（逻辑在前端模拟）。
+
+*   **Core**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+*   **Styling**: [Tailwind CSS](https://tailwindcss.com/) (大量自定义配置实现赛博特效)
+*   **Build/Runtime**: ES Modules (浏览器原生支持) / Vite (推荐)
+*   **PWA**: Service Worker + Manifest.json
+*   **Icons**: SVG (内联与文件)
+
+## 快速开始 (Initialization)
+
+### 环境要求
+*   Node.js (推荐 v16+)
+*   现代浏览器 (Chrome, Safari, Edge, Firefox)
+
+### 本地运行
+
+1.  **克隆仓库**
+    ```bash
+    git clone https://github.com/your-username/ping-an-kou.git
+    cd ping-an-kou
+    ```
+
+2.  **安装依赖**
+    ```bash
+    npm install
+    ```
+
+3.  **启动开发服务器**
+    ```bash
+    npm run dev
+    ```
+
+4.  **访问终端**
+    打开浏览器访问 `http://localhost:5173` (具体端口视构建工具而定)。
+
+## PWA 安装指南 (Mobile Access)
+
+本项目针对移动端进行了深度优化。
+
+1.  **iOS (Safari)**:
+    *   点击底部“分享”按钮。
+    *   向下滑动选择“添加到主屏幕”。
+    *   即可以全屏模式运行，无浏览器地址栏。
+
+2.  **Android (Chrome)**:
+    *   点击右上角菜单。
+    *   选择“安装应用”或“添加到主屏幕”。
+
+## 项目结构 (System Architecture)
+
+```text
+/
+├── public/
+│   ├── icon.svg          # PWA 图标
+│   ├── manifest.json     # PWA 清单配置
+│   └── sw.js             # Service Worker (离线缓存)
+├── src/
+│   ├── components/       # UI 组件库
+│   │   ├── AlertOverlay  # 红色警戒覆盖层
+│   │   ├── CyberButton   # 通用赛博按钮
+│   │   ├── GlobalStats   # 顶部全局数据栏
+│   │   ├── Layout        # 主布局 (含扫描线特效)
+│   │   ├── ProgressRing  # 倒计时圆环
+│   │   ├── StatusMonitor # 底部日志终端
+│   │   └── VIPModal      # 支付弹窗
+│   ├── services/
+│   │   └── storage.ts    # 本地存储逻辑封装
+│   ├── types.ts          # TypeScript 类型定义
+│   ├── App.tsx           # 主应用逻辑
+│   ├── index.tsx         # 入口文件
+│   └── index.html        # HTML 模板
+└── README.md
+```
+
+## 自定义配置 (Configuration)
+
+在 `tailwind.config` (位于 `index.html` 内或独立文件) 中，定义了核心色板：
+
+*   `cyber-green`: `#00ff41` (主色调 - 正常)
+*   `cyber-red`: `#ff003c` (警告色 - 故障)
+*   `cyber-yellow`: `#facc15` (辅助色 - VIP)
+*   `cyber-black`: `#050505` (背景色)
+
+## 许可证 (License)
+
+[MIT License](LICENSE)
+
+---
+
+**Protocol Status:** `ONLINE`
+**Version:** `2.0.4-BETA`
+**System:** `Ping An Kou Defense Grid`

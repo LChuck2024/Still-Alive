@@ -1,0 +1,5 @@
+{
+  "name": "Ping An Kou (Safety Buckle)",
+  "description": "A minimalist, cyberpunk-styled dead man's switch application. Features a check-in mechanism, emergency contact settings, and simulated status monitoring.",
+  "requestFramePermissions": []
+}

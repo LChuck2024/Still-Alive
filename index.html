@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#050505" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>平安扣 | Ping An Kou</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <link rel="apple-touch-icon" href="/icon.svg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"JetBrains Mono"', 'monospace'],
+              tech: ['"Share Tech Mono"', 'monospace'],
+            },
+            colors: {
+              cyber: {
+                black: '#050505',
+                green: '#00ff41',
+                dimGreen: '#008F11',
+                red: '#ff003c',
+                yellow: '#facc15',
+                gray: '#1a1a1a',
+              }
+            },
+            animation: {
+              'pulse-slow': 'pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'shockwave': 'shockwave 0.6s ease-out forwards',
+              'scan': 'scan 8s linear infinite',
+            },
+            keyframes: {
+              'pulse-glow': {
+                '0%, 100%': { opacity: '1', boxShadow: '0 0 10px rgba(0, 255, 65, 0.2)' },
+                '50%': { opacity: '.8', boxShadow: '0 0 25px rgba(0, 255, 65, 0.5)' },
+              },
+              'shockwave': {
+                '0%': { transform: 'scale(1)', opacity: '0.8', borderWidth: '4px' },
+                '100%': { transform: 'scale(2.5)', opacity: '0', borderWidth: '0px' },
+              },
+              'scan': {
+                '0%': { backgroundPosition: '0 0' },
+                '100%': { backgroundPosition: '0 100%' },
+              }
+            },
+            boxShadow: {
+              'neon': '0 0 5px theme("colors.cyber.green"), 0 0 20px theme("colors.cyber.green")',
+              'neon-red': '0 0 5px theme("colors.cyber.red"), 0 0 20px theme("colors.cyber.red")',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        /* Radial Gradient Background as requested */
+        background: radial-gradient(circle at center, #0a1f0a 0%, #000000 100%);
+        color: #00ff41;
+        font-family: 'JetBrains Mono', monospace;
+        text-shadow: 0 0 4px rgba(0, 255, 65, 0.4);
+        overflow-x: hidden;
+        min-height: 100vh;
+        /* Prevent pull-to-refresh on mobile for app-like feel */
+        overscroll-behavior-y: none;
+      }
+      
+      /* Enhanced Scanline Effect */
+      .scanlines {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+        z-index: 50;
+        pointer-events: none;
+        opacity: 0.6; /* Base opacity of lines */
+      }
+      
+      /* Moving scan overlay */
+      .scan-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 2px, 3px 100%;
+        z-index: 50;
+        pointer-events: none;
+        opacity: 0.05; /* Requested transparency */
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #050505; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #004400;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #008F11; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

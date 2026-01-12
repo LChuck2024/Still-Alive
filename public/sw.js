@@ -2,24 +2,31 @@ const CACHE_NAME = 'still-alive-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/index.tsx',
   '/manifest.json',
   '/icon.svg',
-  '/qr-code.png',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Share+Tech+Mono&display=swap',
-  'https://esm.sh/react-dom@^19.2.3/',
-  'https://esm.sh/react@^19.2.3/'
+  '/sw.js'
 ];
 
 // Install Event: Cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching all: app shell and content');
-      return cache.addAll(ASSETS_TO_CACHE);
+      console.log('[Service Worker] Caching app shell');
+      // 使用 addAll 但捕获错误，避免单个资源失败导致整个缓存失败
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map(url => 
+          cache.add(url).catch(err => {
+            console.warn(`[Service Worker] Failed to cache ${url}:`, err);
+            return null;
+          })
+        )
+      ).then(() => {
+        console.log('[Service Worker] Cache installation completed');
+      });
     })
   );
+  // 立即激活新的 Service Worker
+  self.skipWaiting();
 });
 
 // Activate Event: Clean up old caches
@@ -34,6 +41,9 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      // 立即控制所有客户端
+      return self.clients.claim();
     })
   );
 });

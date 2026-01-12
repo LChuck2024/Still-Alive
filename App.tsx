@@ -9,8 +9,9 @@ import { saveState, loadState, checkStatusLogic, saveLogs, loadLogs } from './se
 import { UserState, View } from './types';
 
 function App() {
-  const [state, setState] = useState<UserState>(() => loadState());
-  const [currentView, setCurrentView] = useState<View>(state.isAuthenticated ? View.DASHBOARD : View.LOGIN);
+  const initialState = loadState();
+  const [state, setState] = useState<UserState>(initialState);
+  const [currentView, setCurrentView] = useState<View>(initialState.isAuthenticated ? View.DASHBOARD : View.LOGIN);
   const [isVIPOpen, setIsVIPOpen] = useState(false);
   const [tempEmail, setTempEmail] = useState('');
   

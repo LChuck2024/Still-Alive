@@ -6,6 +6,7 @@ import { StatusMonitor } from './components/StatusMonitor';
 import { ProgressRing } from './components/ProgressRing';
 import { AlertOverlay } from './components/AlertOverlay';
 import { saveState, loadState, checkStatusLogic, saveLogs, loadLogs } from './services/storage';
+import { sendTestEmail } from './services/email';
 import { UserState, View } from './types';
 
 function App() {
@@ -17,6 +18,8 @@ function App() {
   // UI States
   const [logs, setLogs] = useState<string[]>(() => loadLogs());
   const [isAlertTriggered, setIsAlertTriggered] = useState(false);
+  const [testEmailStatus, setTestEmailStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [testEmailMessage, setTestEmailMessage] = useState<string>('');
 
   // Persist state changes
   useEffect(() => {
@@ -106,6 +109,31 @@ function App() {
     }));
     setCurrentView(View.DASHBOARD);
     addLog(`[配置] 协议已更新。阈值: ${threshold}小时`);
+  };
+
+  const handleTestEmail = async () => {
+    const testEmail = state.settings.email || state.settings.emergencyEmail;
+    
+    if (!testEmail) {
+      setTestEmailStatus('error');
+      setTestEmailMessage('请先设置用户邮箱或紧急联系人邮箱');
+      return;
+    }
+
+    setTestEmailStatus('sending');
+    setTestEmailMessage('正在发送测试邮件...');
+    
+    const result = await sendTestEmail(testEmail);
+    
+    if (result.success) {
+      setTestEmailStatus('success');
+      setTestEmailMessage('测试邮件发送成功！请检查您的邮箱。');
+      addLog(`[测试] 测试邮件已发送至: ${testEmail}`);
+    } else {
+      setTestEmailStatus('error');
+      setTestEmailMessage(result.error || '发送失败');
+      addLog(`[错误] 测试邮件发送失败: ${result.error}`);
+    }
   };
 
   return (
@@ -219,6 +247,34 @@ function App() {
                   <option value="48">48 小时</option>
                   <option value="72">72 小时</option>
                 </select>
+              </div>
+
+              {/* 测试邮件发送 */}
+              <div className="pt-2 pb-2 border-t border-cyber-green/20">
+                <label className="block text-xs uppercase mb-3 opacity-80 font-mono">邮件通知测试</label>
+                <CyberButton 
+                  type="button" 
+                  onClick={handleTestEmail}
+                  disabled={testEmailStatus === 'sending'}
+                  className="w-full mb-2"
+                  variant={testEmailStatus === 'success' ? 'vip' : undefined}
+                >
+                  {testEmailStatus === 'sending' ? '发送中...' : '测试发送邮件'}
+                </CyberButton>
+                {testEmailStatus !== 'idle' && (
+                  <div className={`mt-2 p-2 text-xs font-mono border ${
+                    testEmailStatus === 'success' 
+                      ? 'border-cyber-green text-cyber-green bg-cyber-green/10' 
+                      : testEmailStatus === 'error'
+                      ? 'border-cyber-red text-cyber-red bg-cyber-red/10'
+                      : 'border-cyber-green/50 text-cyber-green/80'
+                  }`}>
+                    {testEmailMessage}
+                  </div>
+                )}
+                <p className="mt-2 text-[10px] text-cyber-green/60 font-mono">
+                  测试邮件将发送到您的用户邮箱或紧急联系人邮箱
+                </p>
               </div>
 
               <div className="flex gap-4 pt-4">

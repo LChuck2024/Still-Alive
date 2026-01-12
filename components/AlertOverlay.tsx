@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { sendAlertEmail } from '../services/email';
 
 interface AlertOverlayProps {
   email: string;
@@ -6,17 +7,55 @@ interface AlertOverlayProps {
 
 export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email }) => {
   const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState<'sending' | 'success' | 'error'>('sending');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const hasSentRef = useRef(false);
 
   useEffect(() => {
-    // Fake progress bar for email sending
-    const interval = setInterval(() => {
+    // 确保只发送一次
+    if (hasSentRef.current || !email) return;
+    hasSentRef.current = true;
+
+    // 模拟进度条动画
+    const progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) return 100;
-        return prev + Math.random() * 10;
+        if (prev >= 90) return 90; // 在 90% 时等待实际结果
+        return prev + Math.random() * 15;
       });
+    }, 300);
+
+    // 实际发送邮件
+    const sendEmail = async () => {
+      try {
+        const result = await sendAlertEmail(email);
+        
+        if (result.success) {
+          setProgress(100);
+          setStatus('success');
+          clearInterval(progressInterval);
+        } else {
+          setProgress(100);
+          setStatus('error');
+          setErrorMessage(result.error || '发送失败');
+          clearInterval(progressInterval);
+        }
+      } catch (error) {
+        setProgress(100);
+        setStatus('error');
+        setErrorMessage(error instanceof Error ? error.message : '未知错误');
+        clearInterval(progressInterval);
+      }
+    };
+
+    // 延迟一点再发送，让进度条先动起来
+    setTimeout(() => {
+      sendEmail();
     }, 500);
-    return () => clearInterval(interval);
-  }, []);
+
+    return () => {
+      clearInterval(progressInterval);
+    };
+  }, [email]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-1000">
@@ -55,8 +94,11 @@ export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email }) => {
               ></div>
             </div>
           </div>
-          {progress >= 100 && (
-             <p className="mt-2 animate-pulse font-bold">{'>'} 发送成功。</p>
+          {status === 'success' && progress >= 100 && (
+             <p className="mt-2 animate-pulse font-bold text-cyber-green">{'>'} 发送成功。数据包已传输。</p>
+          )}
+          {status === 'error' && (
+             <p className="mt-2 font-bold text-red-500">{'>'} 发送失败: {errorMessage}</p>
           )}
         </div>
       </div>

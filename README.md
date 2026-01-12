@@ -19,11 +19,13 @@
 
 ## 技术栈 (Tech Stack)
 
-本项目采用现代前端技术构建，无需后端服务器即可运行（逻辑在前端模拟）。
+本项目采用现代全栈技术构建，包含前端应用和后端 API 服务。
 
-*   **Core**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+*   **Frontend**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+*   **Backend**: [Express.js](https://expressjs.com/) (邮件服务代理)
 *   **Styling**: [Tailwind CSS](https://tailwindcss.com/) (大量自定义配置实现赛博特效)
-*   **Build/Runtime**: ES Modules (浏览器原生支持) / Vite (推荐)
+*   **Build/Runtime**: [Vite](https://vitejs.dev/) (开发与构建工具)
+*   **Email Service**: [Resend](https://resend.com/) (邮件发送服务)
 *   **PWA**: Service Worker + Manifest.json
 *   **Icons**: SVG (内联与文件)
 
@@ -33,7 +35,15 @@
 *   Node.js (推荐 v16+)
 *   现代浏览器 (Chrome, Safari, Edge, Firefox)
 
-### 本地运行
+### 环境变量配置
+
+在项目根目录创建 `.env` 文件：
+
+```bash
+RESEND_API_KEY=your_resend_api_key_here
+```
+
+### 本地开发
 
 1.  **克隆仓库**
     ```bash
@@ -46,13 +56,75 @@
     npm install
     ```
 
-3.  **启动开发服务器**
+3.  **配置环境变量**
+    创建 `.env` 文件并填入 `RESEND_API_KEY`
+
+4.  **启动开发服务器**
+    
+    **方式一：同时启动前端和 API 服务器（推荐）**
     ```bash
+    npm run dev:all
+    ```
+    
+    **方式二：分别启动**
+    ```bash
+    # 终端1：启动 API 服务器
+    npm run dev:server
+    
+    # 终端2：启动前端开发服务器
     npm run dev
     ```
 
-4.  **访问终端**
-    打开浏览器访问 `http://localhost:3000` (根据 vite.config.ts 配置，默认端口为 3000)。
+5.  **访问终端**
+    打开浏览器访问 `http://localhost:3000`
+
+### 生产环境部署
+
+1.  **构建项目**
+    ```bash
+    npm run build
+    ```
+
+2.  **启动生产服务器**
+    ```bash
+    npm start
+    ```
+    
+    服务器将在 `http://localhost:3001` 启动（或通过 `PORT` 环境变量指定端口）
+
+3.  **使用 PM2 管理进程（推荐）**
+    ```bash
+    # 安装 PM2
+    npm install -g pm2
+    
+    # 启动应用
+    pm2 start npm --name "still-alive" -- start
+    
+    # 查看状态
+    pm2 status
+    
+    # 查看日志
+    pm2 logs still-alive
+    ```
+
+4.  **使用 Nginx 反向代理（可选）**
+    
+    在 Nginx 配置中添加：
+    ```nginx
+    server {
+        listen 80;
+        server_name your-domain.com;
+        
+        location / {
+            proxy_pass http://localhost:3001;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+    ```
 
 ## PWA 安装指南 (Mobile Access)
 
@@ -80,7 +152,10 @@
 │   ├── StatusMonitor.tsx # 底部日志终端
 │   └── VIPModal.tsx      # 支付弹窗
 ├── services/         # Logic Core (逻辑服务)
-│   └── storage.ts        # 本地存储逻辑封装
+│   ├── storage.ts        # 本地存储逻辑封装
+│   └── email.ts          # 邮件发送服务
+├── server.js         # Backend Server (后端服务器 - Express)
+├── .env              # Environment Variables (环境变量)
 ├── App.tsx           # Main Application (主应用)
 ├── index.html        # Entry Point (HTML 入口)
 ├── index.tsx         # Bootstrapper (React 入口)

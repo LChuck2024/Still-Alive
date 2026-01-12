@@ -19,13 +19,12 @@
 
 ## 技术栈 (Tech Stack)
 
-本项目采用现代全栈技术构建，包含前端应用和后端 API 服务。
+本项目采用现代前端技术构建，邮件发送功能直接在前端调用 Resend API。
 
 *   **Frontend**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-*   **Backend**: [Express.js](https://expressjs.com/) (邮件服务代理)
 *   **Styling**: [Tailwind CSS](https://tailwindcss.com/) (大量自定义配置实现赛博特效)
 *   **Build/Runtime**: [Vite](https://vitejs.dev/) (开发与构建工具)
-*   **Email Service**: [Resend](https://resend.com/) (邮件发送服务)
+*   **Email Service**: [Resend](https://resend.com/) (邮件发送服务 - 直接在前端调用)
 *   **PWA**: Service Worker + Manifest.json
 *   **Icons**: SVG (内联与文件)
 
@@ -152,9 +151,7 @@ RESEND_API_KEY=your_resend_api_key_here
 │   ├── StatusMonitor.tsx # 底部日志终端
 │   └── VIPModal.tsx      # 支付弹窗
 ├── services/         # Logic Core (逻辑服务)
-│   ├── storage.ts        # 本地存储逻辑封装
-│   └── email.ts          # 邮件发送服务
-├── server.js         # Backend Server (后端服务器 - Express)
+│   └── storage.ts        # 本地存储逻辑封装
 ├── .env              # Environment Variables (环境变量)
 ├── App.tsx           # Main Application (主应用)
 ├── index.html        # Entry Point (HTML 入口)

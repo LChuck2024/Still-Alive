@@ -177,7 +177,27 @@ export const sendAlertEmail = async (to: string): Promise<{ success: boolean; er
       }),
     });
 
-    const data = await response.json();
+    // 检查响应内容类型
+    const contentType = response.headers.get('content-type') || '';
+    let data;
+
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      // 如果不是 JSON，尝试读取文本内容
+      const text = await response.text();
+      console.error('服务器返回非 JSON 响应:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType,
+        body: text.substring(0, 200)
+      });
+      
+      return {
+        success: false,
+        error: `服务器返回了意外的响应格式。请检查服务器配置。状态码: ${response.status}`
+      };
+    }
 
     if (!response.ok) {
       return {
@@ -191,6 +211,14 @@ export const sendAlertEmail = async (to: string): Promise<{ success: boolean; er
       messageId: data.messageId
     };
   } catch (error) {
+    // 处理 JSON 解析错误
+    if (error instanceof SyntaxError && error.message.includes('JSON')) {
+      return {
+        success: false,
+        error: '服务器返回了无效的 JSON 响应。请检查服务器配置和 EdgeOne 设置。'
+      };
+    }
+    
     return {
       success: false,
       error: error instanceof Error ? error.message : '网络错误：无法连接到邮件服务器'
@@ -299,7 +327,27 @@ export const sendTestEmail = async (to: string): Promise<{ success: boolean; err
       }),
     });
 
-    const data = await response.json();
+    // 检查响应内容类型
+    const contentType = response.headers.get('content-type') || '';
+    let data;
+
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      // 如果不是 JSON，尝试读取文本内容
+      const text = await response.text();
+      console.error('服务器返回非 JSON 响应:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType,
+        body: text.substring(0, 200)
+      });
+      
+      return {
+        success: false,
+        error: `服务器返回了意外的响应格式。请检查服务器配置。状态码: ${response.status}`
+      };
+    }
 
     if (!response.ok) {
       return {
@@ -313,6 +361,14 @@ export const sendTestEmail = async (to: string): Promise<{ success: boolean; err
       messageId: data.messageId
     };
   } catch (error) {
+    // 处理 JSON 解析错误
+    if (error instanceof SyntaxError && error.message.includes('JSON')) {
+      return {
+        success: false,
+        error: '服务器返回了无效的 JSON 响应。请检查服务器配置和 EdgeOne 设置。'
+      };
+    }
+    
     return {
       success: false,
       error: error instanceof Error ? error.message : '网络错误：无法连接到邮件服务器'

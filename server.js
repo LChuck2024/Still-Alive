@@ -15,8 +15,21 @@ const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // 中间件
-app.use(cors());
+app.use(cors({
+  origin: '*', // 允许所有来源（生产环境可以限制）
+  credentials: true
+}));
 app.use(express.json());
+
+// 添加请求日志（用于调试）
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+    // 确保 API 响应始终是 JSON 格式
+    res.setHeader('Content-Type', 'application/json');
+  }
+  next();
+});
 
 // API 路由（必须在静态文件服务之前）
 // 邮件发送代理端点
@@ -54,12 +67,32 @@ app.post('/api/send-email', async (req, res) => {
       }),
     });
 
-    const data = await response.json();
+    // 检查响应内容类型
+    const contentType = response.headers.get('content-type') || '';
+    let data;
+
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      // 如果不是 JSON，读取文本内容用于错误诊断
+      const text = await response.text();
+      console.error('Resend API 返回非 JSON 响应:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType,
+        body: text.substring(0, 500) // 只记录前500字符
+      });
+      
+      return res.status(500).json({
+        success: false,
+        error: `邮件服务返回了意外的响应格式。状态码: ${response.status}`
+      });
+    }
 
     if (!response.ok) {
       return res.status(response.status).json({
         success: false,
-        error: data.message || `发送失败: ${response.status} ${response.statusText}`
+        error: data.message || data.error || `发送失败: ${response.status} ${response.statusText}`
       });
     }
 
@@ -78,6 +111,7 @@ app.post('/api/send-email', async (req, res) => {
 
 // 健康检查端点
 app.get('/api/health', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
   res.json({ status: 'ok', message: '邮件服务代理运行正常' });
 });
 
@@ -92,11 +126,43 @@ if (isProduction) {
   app.get('*', (req, res) => {
     // 排除 API 路由
     if (req.path.startsWith('/api')) {
+      res.setHeader('Content-Type', 'application/json');
       return res.status(404).json({ error: 'API endpoint not found' });
     }
     res.sendFile(join(distPath, 'index.html'));
   });
 }
+
+// 全局错误处理中间件（必须在所有路由之后）
+app.use((err, req, res, next) => {
+  console.error('服务器错误:', err);
+  
+  // 如果是 API 路由，返回 JSON 错误
+  if (req.path.startsWith('/api')) {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(err.status || 500).json({
+      success: false,
+      error: err.message || '服务器内部错误'
+    });
+  } else {
+    // 非 API 路由，返回 HTML 错误页面
+    res.status(err.status || 500).send('服务器错误');
+  }
+});
+
+// 404 处理（必须在所有路由之后）
+app.use((req, res) => {
+  if (req.path.startsWith('/api')) {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(404).json({
+      success: false,
+      error: 'API endpoint not found'
+    });
+  } else if (!isProduction) {
+    res.status(404).send('页面未找到');
+  }
+  // 生产环境中，静态文件路由会处理 404
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 服务器运行在 http://localhost:${PORT}`);

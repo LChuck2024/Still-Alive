@@ -167,7 +167,7 @@ function App() {
 
     // 如果使用代理，不需要 API Key（API Key 在代理服务器上）
     if (!EMAIL_PROXY_URL && !RESEND_API_KEY) {
-      const errorMsg = '未配置邮件服务。请在 EdgeOne Pages 的环境变量中设置 VITE_EMAIL_PROXY_URL（推荐）或 VITE_RESEND_API_KEY。请查看 EDGEONE-PAGES-ENV.md 了解如何设置。';
+      const errorMsg = '未配置邮件服务。请在 EdgeOne Pages 的环境变量中设置 VITE_EMAIL_PROXY_URL（推荐）或 VITE_RESEND_API_KEY。';
       console.error('[邮件服务]', errorMsg);
       return {
         success: false,

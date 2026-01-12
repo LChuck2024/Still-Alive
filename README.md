@@ -3,7 +3,7 @@
 > "保持信号连接。不要关闭您的终端。"
 > "Keep your signal alive. Do not turn off your terminal."
 
-![License](https://img.shields.io/badge/license-MIT-green.svg) ![Style](https://img.shields.io/badge/style-Cyberpunk-00ff41.svg) ![PWA](https://img.shields.io/badge/PWA-Ready-facc15.svg)
+![Style](https://img.shields.io/badge/style-Cyberpunk-00ff41.svg) ![PWA](https://img.shields.io/badge/PWA-Ready-facc15.svg)
 
 **Still-Alive (我还在)** 是一款极简主义、赛博朋克风格的 **Web MVP (最小可行性产品)**，核心概念为"生命脉冲监控系统 (Life Pulse Monitoring System)"。它模仿了末日生存环境下的通信终端，用户通过定期发送脉冲信号来向系统确认"我还在"。一旦超过设定的时间阈值未发送脉冲，系统将进入红色警戒状态，并模拟触发紧急联系协议。
 
@@ -19,12 +19,13 @@
 
 ## 技术栈 (Tech Stack)
 
-本项目采用现代前端技术构建，邮件发送功能直接在前端调用 Resend API。
+本项目采用现代前端技术构建，邮件发送功能通过 Cloudflare Workers 代理实现。
 
 *   **Frontend**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 *   **Styling**: [Tailwind CSS](https://tailwindcss.com/) (大量自定义配置实现赛博特效)
 *   **Build/Runtime**: [Vite](https://vitejs.dev/) (开发与构建工具)
-*   **Email Service**: [Resend](https://resend.com/) (邮件发送服务 - 直接在前端调用)
+*   **Email Service**: [Resend](https://resend.com/) (邮件发送服务)
+*   **Proxy**: [Cloudflare Workers](https://workers.cloudflare.com/) (免费边缘函数，用于代理邮件发送，避免 CORS 问题)
 *   **PWA**: Service Worker + Manifest.json
 *   **Icons**: SVG (内联与文件)
 
@@ -38,9 +39,17 @@
 
 在项目根目录创建 `.env` 文件：
 
+**推荐方式（使用 Cloudflare Workers 代理）：**
 ```bash
-RESEND_API_KEY=your_resend_api_key_here
+VITE_EMAIL_PROXY_URL=https://your-worker.your-subdomain.workers.dev
 ```
+
+**或直接调用 Resend API（可能遇到 CORS 问题）：**
+```bash
+VITE_RESEND_API_KEY=your_resend_api_key_here
+```
+
+> **注意**：推荐使用 Cloudflare Workers 代理方式，可以避免 CORS 问题并保护 API Key。详细设置步骤请参考 `cloudflare-worker.js` 文件中的注释。
 
 ### 本地开发
 
@@ -56,25 +65,14 @@ RESEND_API_KEY=your_resend_api_key_here
     ```
 
 3.  **配置环境变量**
-    创建 `.env` 文件并填入 `RESEND_API_KEY`
+    创建 `.env` 文件并填入环境变量（参考上面的环境变量配置说明）
 
 4.  **启动开发服务器**
-    
-    **方式一：同时启动前端和 API 服务器（推荐）**
     ```bash
-    npm run dev:all
-    ```
-    
-    **方式二：分别启动**
-    ```bash
-    # 终端1：启动 API 服务器
-    npm run dev:server
-    
-    # 终端2：启动前端开发服务器
     npm run dev
     ```
 
-5.  **访问终端**
+5.  **访问应用**
     打开浏览器访问 `http://localhost:3000`
 
 ### 生产环境部署
@@ -84,45 +82,26 @@ RESEND_API_KEY=your_resend_api_key_here
     npm run build
     ```
 
-2.  **启动生产服务器**
-    ```bash
-    npm start
-    ```
+2.  **部署静态文件**
     
-    服务器将在 `http://localhost:3001` 启动（或通过 `PORT` 环境变量指定端口）
+    构建完成后，`dist` 目录包含所有静态文件，可以部署到任何静态文件托管服务：
+    
+    - **EdgeOne Pages**（推荐）
+    - **Vercel**
+    - **Netlify**
+    - **GitHub Pages**
+    - **Cloudflare Pages**
+    - 或其他静态文件托管服务
 
-3.  **使用 PM2 管理进程（推荐）**
-    ```bash
-    # 安装 PM2
-    npm install -g pm2
+3.  **配置环境变量**
     
-    # 启动应用
-    pm2 start npm --name "still-alive" -- start
-    
-    # 查看状态
-    pm2 status
-    
-    # 查看日志
-    pm2 logs still-alive
-    ```
+    在部署平台配置环境变量：
+    - `VITE_EMAIL_PROXY_URL`（推荐）- Cloudflare Workers URL
+    - 或 `VITE_RESEND_API_KEY` - Resend API Key（可能遇到 CORS 问题）
 
-4.  **使用 Nginx 反向代理（可选）**
-    
-    在 Nginx 配置中添加：
-    ```nginx
-    server {
-        listen 80;
-        server_name your-domain.com;
-        
-        location / {
-            proxy_pass http://localhost:3001;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_cache_bypass $http_upgrade;
-        }
-    }
+4.  **预览构建结果（本地测试）**
+    ```bash
+    npm run preview
     ```
 
 ## PWA 安装指南 (Mobile Access)
@@ -142,7 +121,7 @@ RESEND_API_KEY=your_resend_api_key_here
 
 ```text
 /
-├── components/       # UI Module (UI 组件库)
+├── components/           # UI Module (UI 组件库)
 │   ├── AlertOverlay.tsx  # 红色警戒覆盖层
 │   ├── CyberButton.tsx   # 通用赛博按钮
 │   ├── GlobalStats.tsx   # 顶部全局数据栏
@@ -150,20 +129,43 @@ RESEND_API_KEY=your_resend_api_key_here
 │   ├── ProgressRing.tsx  # 倒计时圆环
 │   ├── StatusMonitor.tsx # 底部日志终端
 │   └── VIPModal.tsx      # 支付弹窗
-├── services/         # Logic Core (逻辑服务)
+├── services/             # Logic Core (逻辑服务)
 │   └── storage.ts        # 本地存储逻辑封装
-├── .env              # Environment Variables (环境变量)
-├── App.tsx           # Main Application (主应用)
-├── index.html        # Entry Point (HTML 入口)
-├── index.tsx         # Bootstrapper (React 入口)
-├── types.ts          # Type Definitions (类型定义)
-├── manifest.json     # PWA Config (清单配置)
-├── sw.js             # Service Worker (离线缓存)
-├── icon.svg          # App Icon (应用图标)
+├── cloudflare-worker.js  # Cloudflare Worker 代码（邮件代理服务）
+├── .env                  # Environment Variables (环境变量)
+├── App.tsx               # Main Application (主应用)
+├── index.html            # Entry Point (HTML 入口)
+├── index.tsx             # Bootstrapper (React 入口)
+├── types.ts              # Type Definitions (类型定义)
+├── manifest.json         # PWA Config (清单配置)
+├── sw.js                 # Service Worker (离线缓存)
+├── icon.svg              # App Icon (应用图标)
+├── vite.config.ts        # Vite 配置文件
+├── tsconfig.json         # TypeScript 配置
 ├── public/
-│   └── qr_code.JPG   # Payment Asset (支付二维码)
-└── README.md         # Documentation (文档)
+│   └── qr_code.JPG       # Payment Asset (支付二维码)
+└── README.md             # Documentation (文档)
 ```
+
+## 邮件服务配置 (Email Service Setup)
+
+### 使用 Cloudflare Workers（推荐）
+
+1. **创建 Cloudflare Worker**
+   - 访问 https://workers.cloudflare.com/
+   - 创建新的 Worker
+   - 复制 `cloudflare-worker.js` 中的代码到编辑器
+   - 在 Worker 设置中添加环境变量 `RESEND_API_KEY`
+   - 部署 Worker 并复制 Worker URL
+
+2. **配置环境变量**
+   - 在项目 `.env` 文件中设置：`VITE_EMAIL_PROXY_URL=https://your-worker.workers.dev`
+   - 或在部署平台的环境变量中配置
+
+### 直接使用 Resend API（不推荐）
+
+如果直接使用 Resend API，可能遇到 CORS 问题：
+- 在 `.env` 文件中设置：`VITE_RESEND_API_KEY=your_api_key`
 
 ## 自定义配置 (Configuration)
 

@@ -477,6 +477,7 @@ function App() {
           email={state.settings.emergencyEmail}
           emailStatus={alertEmailStatus}
           emailError={alertEmailError}
+          onCheckIn={handleCheckIn}
         />
       )}
 

@@ -4,9 +4,10 @@ interface AlertOverlayProps {
   email: string;
   emailStatus: 'sending' | 'success' | 'error';
   emailError?: string;
+  onCheckIn: () => void;
 }
 
-export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email, emailStatus, emailError }) => {
+export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email, emailStatus, emailError, onCheckIn }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -76,6 +77,14 @@ export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email, emailStatus, 
           )}
         </div>
       </div>
+      
+      {/* 恢复按钮 */}
+      <button
+        onClick={onCheckIn}
+        className="mt-8 px-8 py-3 bg-cyber-green/20 border-2 border-cyber-green text-cyber-green font-bold uppercase tracking-wider hover:bg-cyber-green/30 hover:shadow-[0_0_20px_rgba(0,255,65,0.5)] transition-all duration-300 font-tech text-sm md:text-base"
+      >
+        我还在 - 恢复计时
+      </button>
       
       <div className="absolute bottom-10 text-cyber-red/40 text-[10px] uppercase tracking-[0.5em]">
         请勿关闭您的终端

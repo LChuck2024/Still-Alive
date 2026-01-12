@@ -145,18 +145,33 @@ function App() {
     `.trim();
   }, []);
 
-  // 发送邮件函数（直接调用 Resend API）
+  // 发送邮件函数
+  // 如果设置了 VITE_EMAIL_PROXY_URL，则使用代理（推荐，避免 CORS 问题）
+  // 否则直接调用 Resend API（可能遇到 CORS 错误）
   const sendEmail = useCallback(async (
     to: string, 
     subject: string, 
     html: string
   ): Promise<{ success: boolean; error?: string; messageId?: string }> => {
+    const EMAIL_PROXY_URL = import.meta.env.VITE_EMAIL_PROXY_URL;
     const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY;
 
-    if (!RESEND_API_KEY) {
+    // 调试信息（生产环境可以移除）
+    console.log('[邮件服务] 环境变量检查:', {
+      hasProxy: !!EMAIL_PROXY_URL,
+      hasApiKey: !!RESEND_API_KEY,
+      proxyUrl: EMAIL_PROXY_URL || '未设置',
+      envMode: import.meta.env.MODE,
+      isProd: import.meta.env.PROD
+    });
+
+    // 如果使用代理，不需要 API Key（API Key 在代理服务器上）
+    if (!EMAIL_PROXY_URL && !RESEND_API_KEY) {
+      const errorMsg = '未配置邮件服务。请在 EdgeOne Pages 的环境变量中设置 VITE_EMAIL_PROXY_URL（推荐）或 VITE_RESEND_API_KEY。请查看 EDGEONE-PAGES-ENV.md 了解如何设置。';
+      console.error('[邮件服务]', errorMsg);
       return {
         success: false,
-        error: 'RESEND_API_KEY 未配置。请在 .env 文件中设置 VITE_RESEND_API_KEY。'
+        error: errorMsg
       };
     }
 
@@ -168,8 +183,58 @@ function App() {
     }
 
     try {
+      // 如果设置了代理 URL，使用代理（推荐方式，避免 CORS 问题）
+      if (EMAIL_PROXY_URL) {
+        const response = await fetch(EMAIL_PROXY_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to,
+            subject,
+            html,
+          }),
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        let data;
+
+        if (contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.error('代理返回非 JSON 响应:', {
+            status: response.status,
+            statusText: response.statusText,
+            contentType,
+            body: text.substring(0, 500)
+          });
+          
+          return {
+            success: false,
+            error: `代理服务返回了意外的响应格式。状态码: ${response.status}`
+          };
+        }
+
+        if (!response.ok) {
+          return {
+            success: false,
+            error: data.error || data.message || `发送失败: ${response.status} ${response.statusText}`
+          };
+        }
+
+        return {
+          success: true,
+          messageId: data.id || data.messageId
+        };
+      }
+
+      // 直接调用 Resend API（可能遇到 CORS 错误）
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
+        mode: 'cors',
         headers: {
           'Authorization': `Bearer ${RESEND_API_KEY}`,
           'Content-Type': 'application/json',
@@ -214,10 +279,50 @@ function App() {
         messageId: data.id
       };
     } catch (error) {
-      console.error('邮件发送错误:', error);
+      console.error('[邮件服务] 发送错误:', error);
+      console.error('[邮件服务] 错误详情:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      // 处理 CORS 或网络错误
+      if (error instanceof TypeError) {
+        // 检查是否是网络错误
+        if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+          const errorMsg = '网络错误：无法连接到邮件服务。这通常是因为 CORS 限制 - Resend API 不允许直接从浏览器调用。请使用 Cloudflare Workers 代理（免费）。查看 QUICK-FIX.md 了解如何设置。';
+          console.error('[邮件服务]', errorMsg);
+          return {
+            success: false,
+            error: errorMsg
+          };
+        }
+        return {
+          success: false,
+          error: `网络错误: ${error.message}`
+        };
+      }
+      
+      // 处理其他错误
+      if (error instanceof Error) {
+        // 检查是否是 CORS 错误
+        if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+          const errorMsg = 'CORS 错误：浏览器阻止了跨域请求。Resend API 不允许直接从浏览器调用。请使用 Cloudflare Workers 代理（免费）。查看 QUICK-FIX.md 了解如何设置。';
+          console.error('[邮件服务]', errorMsg);
+          return {
+            success: false,
+            error: errorMsg
+          };
+        }
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : '未知错误'
+        error: '未知错误：请检查浏览器控制台获取详细信息。'
       };
     }
   }, []);

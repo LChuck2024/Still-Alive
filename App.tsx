@@ -38,86 +38,6 @@ function App() {
     setLogs(prev => [...prev, message].slice(-50));
   }, []);
 
-  // 无感记录用户操作到 TiDB
-  const logAction = useCallback(async (
-    actionType: 'LOGIN' | 'PULSE_CHECK' | 'UPDATE_EMERGENCY' | 'TEST_SEND',
-    actionData?: Record<string, any>
-  ) => {
-    const email = state.settings.email || tempEmail;
-    if (!email) {
-      console.warn('[操作记录] 邮箱为空，跳过记录');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/log-action', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          action_type: actionType,
-          action_data: actionData,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[操作记录] 记录失败:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorText
-        });
-        addLog(`[错误] 操作记录失败: ${response.status} ${response.statusText}`);
-        return;
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        console.log('[操作记录] 记录成功:', data);
-      } else {
-        console.error('[操作记录] 记录失败:', data);
-        addLog(`[错误] 操作记录失败: ${data.error || '未知错误'}`);
-      }
-    } catch (error) {
-      // 显示错误信息，帮助调试
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('[操作记录] 记录错误:', error);
-      addLog(`[错误] 操作记录异常: ${errorMessage}`);
-    }
-  }, [state.settings.email, tempEmail, addLog]);
-
-  // 同步状态：从 TiDB 获取最后一次 PULSE_CHECK 时间
-  const syncStatus = useCallback(async () => {
-    const email = state.settings.email;
-    if (!email || !state.isAuthenticated) return;
-
-    try {
-      const response = await fetch(`/api/get-status?email=${encodeURIComponent(email)}`);
-      
-      if (!response.ok) {
-        console.error('[状态同步] 获取状态失败:', response.statusText);
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.lastCheckIn) {
-        // 如果数据库中的时间比本地时间更新，则同步
-        if (!state.lastCheckIn || data.lastCheckIn > state.lastCheckIn) {
-          setState(prev => ({
-            ...prev,
-            lastCheckIn: data.lastCheckIn,
-          }));
-          addLog(`[同步] 状态已从服务器同步。`);
-        }
-      }
-    } catch (error) {
-      // 静默失败，不影响用户体验
-      console.error('[状态同步] 同步错误:', error);
-    }
-  }, [state.settings.email, state.isAuthenticated, state.lastCheckIn, addLog]);
 
   // 生成协议失效风格的 HTML 邮件内容
   const generateAlertEmailHTML = useCallback((): string => {
@@ -484,9 +404,6 @@ function App() {
     }));
     setCurrentView(View.DASHBOARD);
     addLog(`[系统] 身份已验证: ${tempEmail}`);
-    
-    // 记录登录操作
-    logAction('LOGIN', { email: tempEmail });
   };
 
   const handleCheckIn = () => {
@@ -504,12 +421,6 @@ function App() {
     const packetId = Math.random().toString(16).substring(2, 10).toUpperCase();
     const timestamp = new Date().toLocaleTimeString('zh-CN', {hour12: false});
     addLog(`[脉冲] 生命信号 0x${packetId} 已确认 于 ${timestamp}.`);
-    
-    // 4. 记录脉冲检查操作
-    logAction('PULSE_CHECK', { 
-      timestamp: checkInTime,
-      packetId 
-    });
   };
 
   const handleSettingsSave = (e: React.FormEvent) => {
@@ -531,15 +442,6 @@ function App() {
     }));
     setCurrentView(View.DASHBOARD);
     addLog(`[配置] 协议已更新。阈值: ${threshold}小时`);
-    
-    // 如果紧急联系人邮箱发生变化，记录更新操作
-    if (hasEmergencyEmailChanged) {
-      logAction('UPDATE_EMERGENCY', {
-        oldEmergencyEmail,
-        newEmergencyEmail: emergencyEmail,
-        threshold: parseInt(threshold)
-      });
-    }
   };
 
   const handleTestEmail = async () => {
@@ -564,12 +466,6 @@ function App() {
       setTestEmailStatus('success');
       setTestEmailMessage('测试邮件发送成功！请检查您的邮箱。');
       addLog(`[测试] 测试邮件已发送至: ${testEmail}`);
-      
-      // 记录测试发信操作
-      logAction('TEST_SEND', {
-        recipient: testEmail,
-        messageId: result.messageId
-      });
     } else {
       setTestEmailStatus('error');
       setTestEmailMessage(result.error || '发送失败');

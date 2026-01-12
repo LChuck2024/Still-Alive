@@ -34,13 +34,6 @@ function App() {
     saveLogs(logs);
   }, [logs]);
 
-  // 页面加载时同步状态
-  useEffect(() => {
-    if (state.isAuthenticated && state.settings.email) {
-      syncStatus();
-    }
-  }, [state.isAuthenticated, state.settings.email, syncStatus]); // 只在认证状态或邮箱变化时执行
-
   const addLog = useCallback((message: string) => {
     setLogs(prev => [...prev, message].slice(-50));
   }, []);

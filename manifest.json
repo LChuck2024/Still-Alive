@@ -1,6 +1,7 @@
 {
-  "name": "平安扣",
-  "short_name": "平安扣",
+  "name": "Still-Alive",
+  "short_name": "我还在",
+  "description": "A cyber-style life pulse monitoring system.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050505",

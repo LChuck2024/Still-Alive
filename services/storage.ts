@@ -1,7 +1,7 @@
 import { UserState } from '../types';
 
-const STORAGE_KEY = 'ping_an_kou_data';
-const LOGS_KEY = 'ping_an_kou_logs';
+const STORAGE_KEY = 'still_alive_data';
+const LOGS_KEY = 'still_alive_logs';
 
 const DEFAULT_STATE: UserState = {
   isAuthenticated: false,

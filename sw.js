@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ping-an-kou-v1';
+const CACHE_NAME = 'still-alive-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

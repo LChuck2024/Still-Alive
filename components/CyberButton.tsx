@@ -14,6 +14,7 @@ export const CyberButton: React.FC<CyberButtonProps> = ({
   ...props 
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isHeartbeat, setIsHeartbeat] = useState(false);
 
   // Auto reset shockwave animation state
   useEffect(() => {
@@ -23,8 +24,17 @@ export const CyberButton: React.FC<CyberButtonProps> = ({
     }
   }, [isAnimating]);
 
+  // Auto reset heartbeat animation state
+  useEffect(() => {
+    if (isHeartbeat) {
+      const timer = setTimeout(() => setIsHeartbeat(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isHeartbeat]);
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setIsAnimating(true);
+    setIsHeartbeat(true);
     if (onClick) onClick(e);
   };
 
@@ -47,7 +57,7 @@ export const CyberButton: React.FC<CyberButtonProps> = ({
 
   return (
     <button 
-      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className} ${isHeartbeat ? 'animate-heartbeat' : ''}`}
       onClick={handleClick}
       {...props}
     >

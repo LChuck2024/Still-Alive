@@ -1,15 +1,15 @@
-# 平安扣 (Ping An Kou) | P.A.K. Protocol
+# Still-Alive (我还在) | Life Pulse Monitoring System
 
 > "保持信号连接。不要关闭您的终端。"
 > "Keep your signal alive. Do not turn off your terminal."
 
 ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Style](https://img.shields.io/badge/style-Cyberpunk-00ff41.svg) ![PWA](https://img.shields.io/badge/PWA-Ready-facc15.svg)
 
-**平安扣** 是一款极简主义、赛博朋克风格的 **Web MVP (最小可行性产品)**，核心概念为“死人开关 (Dead Man's Switch)”。它模仿了末日生存环境下的通信终端，用户通过定期打卡来向系统确认“我还在”。一旦超过设定的时间阈值未打卡，系统将进入红色警戒状态，并模拟触发紧急联系协议。
+**Still-Alive (我还在)** 是一款极简主义、赛博朋克风格的 **Web MVP (最小可行性产品)**，核心概念为"生命脉冲监控系统 (Life Pulse Monitoring System)"。它模仿了末日生存环境下的通信终端，用户通过定期发送脉冲信号来向系统确认"我还在"。一旦超过设定的时间阈值未发送脉冲，系统将进入红色警戒状态，并模拟触发紧急联系协议。
 
 ## 核心功能 (Core Protocols)
 
-*   **存活确认 (Heartbeat Check-in)**: 巨大的“我还在”按钮，点击即发送心跳包，重置倒计时。
+*   **脉冲确认 (Pulse Confirmation)**: 巨大的"我还在"按钮，点击即发送生命脉冲信号，重置倒计时。
 *   **可视化倒计时 (Visual Countdown)**: 带有动态颜色变化的进度环（绿 -> 黄 -> 红），直观展示剩余生存时间。
 *   **红色警戒模式 (Red Alert Mode)**: 当倒计时归零，界面切换至“系统故障”的红色警戒主题，并弹出全屏告警覆盖层。
 *   **本地数据持久化 (Local Persistence)**: 使用 `localStorage` 模拟数据库，保存用户身份、设置及日志，刷新页面不丢失状态。
@@ -37,8 +37,8 @@
 
 1.  **克隆仓库**
     ```bash
-    git clone https://github.com/your-username/ping-an-kou.git
-    cd ping-an-kou
+    git clone https://github.com/your-username/still-alive.git
+    cd still-alive
     ```
 
 2.  **安装依赖**
@@ -52,7 +52,7 @@
     ```
 
 4.  **访问终端**
-    打开浏览器访问 `http://localhost:5173` (具体端口视构建工具而定)。
+    打开浏览器访问 `http://localhost:3000` (根据 vite.config.ts 配置，默认端口为 3000)。
 
 ## PWA 安装指南 (Mobile Access)
 
@@ -88,7 +88,8 @@
 ├── manifest.json     # PWA Config (清单配置)
 ├── sw.js             # Service Worker (离线缓存)
 ├── icon.svg          # App Icon (应用图标)
-├── qr-code.png       # Payment Asset (支付二维码)
+├── public/
+│   └── qr_code.JPG   # Payment Asset (支付二维码)
 └── README.md         # Documentation (文档)
 ```
 
@@ -106,4 +107,4 @@
 
 **Protocol Status:** `ONLINE`
 **Version:** `2.0.4-BETA`
-**System:** `Ping An Kou Defense Grid`
+**System:** `Still-Alive Pulse Monitoring Grid`

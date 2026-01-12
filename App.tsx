@@ -43,7 +43,7 @@ function App() {
       if (status === "ALERT_TRIGGERED") {
         if (!isAlertTriggered) {
           setIsAlertTriggered(true);
-          addLog(`[系统故障] 严重超时。正在激活紧急协议。`);
+          addLog(`[警告] 脉冲信号中断。生命体征检测失败。`);
         }
       } else {
         if (isAlertTriggered) {
@@ -53,7 +53,7 @@ function App() {
 
       // 2. Random ambiance logs (only if safe)
       if (status === "SAFE" && Math.random() > 0.98) {
-         addLog(`[系统] 后台扫描完成。系统正常。`);
+         addLog(`[监控] 脉冲频率正常。存活状态确认。`);
       }
 
     }, 1000);
@@ -87,7 +87,7 @@ function App() {
     // 3. Log
     const packetId = Math.random().toString(16).substring(2, 10).toUpperCase();
     const timestamp = new Date().toLocaleTimeString('zh-CN', {hour12: false});
-    addLog(`[信号] 数据包 0x${packetId} 发送成功 于 ${timestamp}.`);
+    addLog(`[脉冲] 生命信号 0x${packetId} 已确认 于 ${timestamp}.`);
   };
 
   const handleSettingsSave = (e: React.FormEvent) => {
@@ -162,7 +162,7 @@ function App() {
               >
                 <div className="flex flex-col items-center justify-center">
                   <span className="text-4xl md:text-5xl font-bold font-tech mb-1 drop-shadow-lg">我还在</span>
-                  <span className="text-[10px] opacity-60 tracking-[0.3em] uppercase">全域广播</span>
+                  <span className="text-[10px] opacity-60 tracking-[0.3em] uppercase">SEND PULSE</span>
                 </div>
               </CyberButton>
             </ProgressRing>

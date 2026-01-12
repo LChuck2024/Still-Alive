@@ -108,7 +108,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 
       {/* Timer Overlay */}
       <div className="absolute top-[68%] left-1/2 transform -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center">
-         <span className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">剩余时间</span>
+         <span className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">下一次脉冲确认倒计时...</span>
          <span 
            className="font-tech text-2xl font-bold tracking-wider drop-shadow-md transition-colors duration-500"
            style={{ color: strokeColor }}

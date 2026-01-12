@@ -32,7 +32,7 @@ export const AlertOverlay: React.FC<AlertOverlayProps> = ({ email }) => {
       </h1>
       
       <p className="text-cyber-red/80 font-mono text-sm md:text-lg mb-8 tracking-wider uppercase animate-pulse">
-        未检测到心跳信号
+        未检测到脉冲信号
       </p>
 
       {/* Terminal Output */}

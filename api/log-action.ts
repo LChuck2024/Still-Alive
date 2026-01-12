@@ -25,6 +25,13 @@ interface RequestBody {
 
 // EdgeOne Pages 云函数入口
 export default async function handler(request: Request): Promise<Response> {
+  // 添加调试日志
+  console.log('[log-action] 收到请求:', {
+    method: request.method,
+    url: request.url,
+    headers: Object.fromEntries(request.headers.entries()),
+  });
+
   // 处理 CORS 预检请求
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -58,6 +65,7 @@ export default async function handler(request: Request): Promise<Response> {
   try {
     // 解析请求体
     const body: RequestBody = await request.json();
+    console.log('[log-action] 请求体:', body);
     const { email, action_type, action_data } = body;
 
     // 验证必要参数
@@ -120,7 +128,9 @@ export default async function handler(request: Request): Promise<Response> {
     
     const actionDataJson = action_data ? JSON.stringify(action_data) : null;
     
+    console.log('[log-action] 准备执行 SQL:', { sql, params: [email, action_type, actionDataJson] });
     const result = await execute(sql, [email, action_type, actionDataJson]);
+    console.log('[log-action] SQL 执行成功:', result);
 
     // 返回成功响应
     return new Response(
@@ -138,7 +148,14 @@ export default async function handler(request: Request): Promise<Response> {
       }
     );
   } catch (error) {
-    console.error('[log-action] 错误:', error);
+    // 详细的错误日志
+    const errorDetails = {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown',
+    };
+    
+    console.error('[log-action] 错误详情:', JSON.stringify(errorDetails, null, 2));
     
     // 处理数据库连接错误
     if (error instanceof Error) {
@@ -147,6 +164,43 @@ export default async function handler(request: Request): Promise<Response> {
           JSON.stringify({
             success: false,
             error: '数据库配置错误：' + error.message,
+            details: '请检查环境变量 TIDB_HOST, TIDB_USER, TIDB_PASSWORD 是否已配置',
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+            },
+          }
+        );
+      }
+      
+      // 处理数据库连接错误
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('connect')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: '数据库连接失败：' + error.message,
+            details: '请检查 TIDB_HOST 和 TIDB_PORT 是否正确，以及网络连接是否正常',
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+            },
+          }
+        );
+      }
+      
+      // 处理 SQL 错误
+      if (error.message.includes('SQL') || error.message.includes('syntax')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'SQL 执行错误：' + error.message,
+            details: '请检查数据库表结构是否正确',
           }),
           {
             status: 500,
@@ -163,6 +217,7 @@ export default async function handler(request: Request): Promise<Response> {
       JSON.stringify({
         success: false,
         error: error instanceof Error ? error.message : '未知错误',
+        details: errorDetails,
       }),
       {
         status: 500,

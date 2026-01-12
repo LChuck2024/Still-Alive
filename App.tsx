@@ -50,7 +50,10 @@ function App() {
     actionData?: Record<string, any>
   ) => {
     const email = state.settings.email || tempEmail;
-    if (!email) return;
+    if (!email) {
+      console.warn('[操作记录] 邮箱为空，跳过记录');
+      return;
+    }
 
     try {
       const response = await fetch('/api/log-action', {
@@ -66,13 +69,30 @@ function App() {
       });
 
       if (!response.ok) {
-        console.error('[操作记录] 记录失败:', response.statusText);
+        const errorText = await response.text();
+        console.error('[操作记录] 记录失败:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+        addLog(`[错误] 操作记录失败: ${response.status} ${response.statusText}`);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        console.log('[操作记录] 记录成功:', data);
+      } else {
+        console.error('[操作记录] 记录失败:', data);
+        addLog(`[错误] 操作记录失败: ${data.error || '未知错误'}`);
       }
     } catch (error) {
-      // 静默失败，不影响用户体验
+      // 显示错误信息，帮助调试
+      const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('[操作记录] 记录错误:', error);
+      addLog(`[错误] 操作记录异常: ${errorMessage}`);
     }
-  }, [state.settings.email, tempEmail]);
+  }, [state.settings.email, tempEmail, addLog]);
 
   // 同步状态：从 TiDB 获取最后一次 PULSE_CHECK 时间
   const syncStatus = useCallback(async () => {

@@ -84,14 +84,21 @@ VITE_RESEND_API_KEY=your_resend_api_key_here
 
 2.  **部署静态文件**
     
-    构建完成后，`dist` 目录包含所有静态文件，可以部署到任何静态文件托管服务：
+    构建完成后，`dist` 目录包含所有静态文件。
     
+    **重要：部署的是 `dist` 目录里的内容，而不是 `dist` 文件夹本身！**
+    
+    将 `dist` 目录下的所有文件和文件夹（`index.html`, `assets/`, `icon.svg`, `sw.js` 等）上传到部署平台的**根目录**。
+    
+    可以部署到以下静态文件托管服务：
     - **EdgeOne Pages**（推荐）
     - **Vercel**
     - **Netlify**
     - **GitHub Pages**
     - **Cloudflare Pages**
     - 或其他静态文件托管服务
+    
+    > **注意**：如果使用 Vercel、Netlify 等支持自动构建的平台，通常只需要连接 Git 仓库，平台会自动识别 `dist` 目录并部署。如果手动上传，则需要上传 `dist` 目录里的内容到根目录。
 
 3.  **配置环境变量**
     
@@ -103,6 +110,10 @@ VITE_RESEND_API_KEY=your_resend_api_key_here
     ```bash
     npm run preview
     ```
+
+5.  **部署检查**
+    
+    部署前请参考 `DEPLOY_CHECKLIST.md` 进行部署前检查，确保所有文件正确构建和配置。
 
 ## PWA 安装指南 (Mobile Access)
 
@@ -143,8 +154,11 @@ VITE_RESEND_API_KEY=your_resend_api_key_here
 ├── vite.config.ts        # Vite 配置文件
 ├── tsconfig.json         # TypeScript 配置
 ├── public/
-│   └── qr_code.JPG       # Payment Asset (支付二维码)
-└── README.md             # Documentation (文档)
+│   ├── icon.svg          # App Icon (应用图标)
+│   ├── qr_code.JPG       # Payment Asset (支付二维码)
+│   └── sw.js             # Service Worker (离线缓存)
+├── README.md             # Documentation (项目文档)
+└── DEPLOY_CHECKLIST.md   # Deployment Guide (部署检查清单)
 ```
 
 ## 邮件服务配置 (Email Service Setup)

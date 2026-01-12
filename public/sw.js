@@ -1,22 +1,23 @@
-const CACHE_NAME = 'still-alive-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon.svg',
-  '/sw.js'
-];
+const CACHE_NAME = 'still-alive-v2';
 
 // Install Event: Cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Caching app shell');
-      // 使用 addAll 但捕获错误，避免单个资源失败导致整个缓存失败
+      // 只缓存确定存在的核心资源
+      const coreAssets = [
+        '/',
+        '/index.html',
+        '/icon.svg',
+        '/sw.js'
+      ];
+      
+      // 使用 Promise.allSettled 确保单个资源失败不影响整体
       return Promise.allSettled(
-        ASSETS_TO_CACHE.map(url => 
+        coreAssets.map(url => 
           cache.add(url).catch(err => {
-            console.warn(`[Service Worker] Failed to cache ${url}:`, err);
+            // 静默处理错误，不输出警告（避免控制台噪音）
             return null;
           })
         )
@@ -49,12 +50,34 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch Event: Network first, then Cache (Strategy for dynamic content apps)
-// or Cache First, then Network (Strategy for static apps).
-// Here we use Stale-While-Revalidate logic or simple Cache Fallback.
 self.addEventListener('fetch', (event) => {
+  // 只处理 GET 请求
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
+  // 跳过跨域请求和外部资源
+  const url = new URL(event.request.url);
+  if (url.origin !== location.origin) {
+    return;
+  }
+  
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    // 先尝试网络请求
+    fetch(event.request)
+      .then((response) => {
+        // 如果请求成功，缓存响应
+        if (response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // 网络失败时，尝试从缓存获取
+        return caches.match(event.request);
+      })
   );
 });

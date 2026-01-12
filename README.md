@@ -13,7 +13,7 @@
 *   **可视化倒计时 (Visual Countdown)**: 带有动态颜色变化的进度环（绿 -> 黄 -> 红），直观展示剩余生存时间。
 *   **红色警戒模式 (Red Alert Mode)**: 当倒计时归零，界面切换至“系统故障”的红色警戒主题，并弹出全屏告警覆盖层。
 *   **本地数据持久化 (Local Persistence)**: 使用 `localStorage` 模拟数据库，保存用户身份、设置及日志，刷新页面不丢失状态。
-*   **PWA 支持 (Progressive Web App)**: 支持“添加到主屏幕”，离线可用，提供原生 App 般的沉浸式体验。
+*   **PWA 支持 (Progressive Web App)**: 支持"添加到主屏幕"，离线可用，提供原生 App 般的沉浸式体验。使用 Service Worker 实现运行时缓存策略。
 *   **VIP 模拟支付**: 集成模拟的微信支付流程，用于解锁“高级功能”（演示用途）。
 *   **沉浸式 UI**: 包含扫描线 (Scanlines)、故障文字 (Glitch Text)、冲击波 (Shockwave) 动画及动态终端日志。
 
@@ -22,7 +22,7 @@
 本项目采用现代前端技术构建，邮件发送功能通过 Cloudflare Workers 代理实现。
 
 *   **Frontend**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-*   **Styling**: [Tailwind CSS](https://tailwindcss.com/) (大量自定义配置实现赛博特效)
+*   **Styling**: [Tailwind CSS](https://tailwindcss.com/) (通过 CDN 引入，大量自定义配置实现赛博特效)
 *   **Build/Runtime**: [Vite](https://vitejs.dev/) (开发与构建工具)
 *   **Email Service**: [Resend](https://resend.com/) (邮件发送服务)
 *   **Proxy**: [Cloudflare Workers](https://workers.cloudflare.com/) (免费边缘函数，用于代理邮件发送，避免 CORS 问题)
@@ -113,7 +113,10 @@ VITE_RESEND_API_KEY=your_resend_api_key_here
 
 5.  **部署检查**
     
-    部署前请参考 `DEPLOY_CHECKLIST.md` 进行部署前检查，确保所有文件正确构建和配置。
+    部署前请确保：
+    - 所有文件正确构建（`npm run build` 无错误）
+    - 环境变量已正确配置
+    - `dist` 目录包含所有必需文件
 
 ## PWA 安装指南 (Mobile Access)
 
@@ -142,23 +145,24 @@ VITE_RESEND_API_KEY=your_resend_api_key_here
 │   └── VIPModal.tsx      # 支付弹窗
 ├── services/             # Logic Core (逻辑服务)
 │   └── storage.ts        # 本地存储逻辑封装
+├── public/               # Public Assets (公共静态资源)
+│   ├── icon.svg          # App Icon (应用图标)
+│   ├── qr_code.JPG       # Payment Asset (支付二维码)
+│   └── sw.js             # Service Worker (离线缓存)
 ├── cloudflare-worker.js  # Cloudflare Worker 代码（邮件代理服务）
-├── .env                  # Environment Variables (环境变量)
+├── .env                  # Environment Variables (环境变量，不提交到 Git)
 ├── App.tsx               # Main Application (主应用)
 ├── index.html            # Entry Point (HTML 入口)
 ├── index.tsx             # Bootstrapper (React 入口)
 ├── types.ts              # Type Definitions (类型定义)
 ├── manifest.json         # PWA Config (清单配置)
-├── sw.js                 # Service Worker (离线缓存)
-├── icon.svg              # App Icon (应用图标)
 ├── vite.config.ts        # Vite 配置文件
 ├── tsconfig.json         # TypeScript 配置
-├── public/
-│   ├── icon.svg          # App Icon (应用图标)
-│   ├── qr_code.JPG       # Payment Asset (支付二维码)
-│   └── sw.js             # Service Worker (离线缓存)
-├── README.md             # Documentation (项目文档)
-└── DEPLOY_CHECKLIST.md   # Deployment Guide (部署检查清单)
+├── vite-env.d.ts         # Vite 环境类型定义
+├── package.json          # 项目依赖配置
+├── package-lock.json     # 依赖锁定文件
+├── .gitignore            # Git 忽略规则
+└── README.md             # Documentation (项目文档)
 ```
 
 ## 邮件服务配置 (Email Service Setup)
